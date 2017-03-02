@@ -1,0 +1,35 @@
+{
+  "name": "mysrv",
+  "version": "0.0.1",
+  "description": "Yet another Node.js web framework,based on koa.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k1995/mysrv.git"
+  },
+  "keywords": [
+    "web",
+    "framework",
+    "mvc",
+    "koa"
+  ],
+  "author": "k1995328@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/k1995/mysrv/issues"
+  },
+  "homepage": "https://github.com/k1995/mysrv#readme",
+  "dependencies": {
+    "koa": "^1.2.4",
+    "koa-better-body": "^3.0.2",
+    "koa-router": "^5.4.0",
+    "koa-send": "^3.3.0",
+    "koa-session": "^3.4.0",
+    "mysql": "^2.13.0",
+    "nunjucks": "^3.0.0",
+    "sequelize": "^3.30.2"
+  }
+}
