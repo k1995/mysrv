@@ -6,7 +6,11 @@ Mysrv shorthand for "My Server", it's a MVC Framework for Node.js. Mysrv aims to
 > This is alpha software; use at your own risk
 
 
+
+[【中文介绍】](README_zh.md)
+
 ## Installation
+
 ```
 npm install mysrv
 ```
