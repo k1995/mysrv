@@ -51,17 +51,11 @@ class Router {
         for (let prop of props) {
 
             const action = typeof Controller == 'function' ? Controller.prototype[prop] : Controller[prop];
-
-            if (prop == 'constructor' || ('function' != (typeof action))) {
-
-                continue;
-            }
-
+            if (prop == 'constructor' || ('function' != (typeof action))) continue;
             const actionName = prop, conf = this.__getHint(action);
 
             // 默认处理所有method类型
             var method = 'all', url = '';
-
             method = conf['method'] ? conf['method'] : method;
 
             if (conf['url']) {
@@ -85,37 +79,32 @@ class Router {
                 if(actionName == 'index') {
 
                     url = `/${controllerName}`;
-
-                    if(controllerName == 'index') {
-
-                        url = '/'
-                    }
+                    if(controllerName == 'index') url = '/';
                 }else{
-
                     url = `/${controllerName}/${actionName}`;
                 }
             }
 
             method = method.toLowerCase();
-
             const self = this;
 
-            router[method](url, function* (next) {
+            router[method](url, async function(ctx, next) {
 
-                this.params = Object.assign(this.query, this.request.fields || {});
+                ctx.params = Object.assign(ctx.query, ctx.request.body || {});
                 
-                this.routeInfo = {
+                ctx.routeInfo = {
                     controller: controllerName,
                     action: actionName
                 }
 
                 for(let name in self.app.context.services) {
 
-                    this[name] = self.app.context.services[name];
+                    ctx[name] = self.app.context.services[name];
                 }
 
-                yield action.call(this);
-                yield next;
+                await action.call(ctx);
+                
+                await next();
 
             }, self.app.render.start());
         }

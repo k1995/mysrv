@@ -2,7 +2,6 @@
  * 此模块中导出的方法，用于在视图模版中调用
  */
 var app;
-const co = require('co');
 
 exports.startup = function (_app) {
 
@@ -15,8 +14,7 @@ exports.startup = function (_app) {
  */
 exports.render = function(url, data) {
 
-    var tmp = url.split(':');
-    var controller, action;
+    var tmp = url.split(':'), controller, action;
 
     if (tmp.length > 1) {
 
@@ -27,37 +25,17 @@ exports.render = function(url, data) {
         action = 'index';
     }
 
-    var gen;
+    var func;
 
     if(typeof app.controllers[controller] == 'function') {
 
-        gen = app.controllers[controller].prototype[action].call(this);
+        func = app.controllers[controller].prototype[action];
     }else{
-        gen = app.controllers[controller][action].call(this);
+        func = app.controllers[controller][action];
     }
 
-    let rst = gen.next();
+    func.call(this);
+    var content = app.render.renderTmplate(this, `${controller}/${action}`, data);
 
-    if (!rst.done) {
-
-        co(new ProxyGenerator(gen, rst));
-    }
-
-    return app.render.safeString(app.render.renderTmplate(this, `${controller}/${action}`, data));
-}
-
-class ProxyGenerator {
-    constructor(gen, ret) {
-        this.gen = gen;
-        this.ret = ret;
-        this.first = true;
-    }
-
-    next(value) {
-        if (this.first) {
-            this.first = false;
-            return this.ret;
-        }
-        return this.gen.next(value);
-    }
+    return app.render.safeString(content);
 }

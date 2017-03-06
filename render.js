@@ -31,32 +31,28 @@ class Render {
 
         const self = this;
 
-        return function* (next) {
+        return async function (ctx, next) {
 
-            const routeInfo = this.routeInfo, renderInfo = this.renderInfo;
+            const routeInfo = ctx.routeInfo, renderInfo = ctx.renderInfo;
 
-            if(!renderInfo) {
-                
-                yield next;
-                return;
-            }
+            if(!renderInfo) return await next();
 
             // render main view
             // 渲染模版
-            const view = self.renderTmplate(this, renderInfo.view, renderInfo.data);
+            const view = self.renderTmplate(ctx, renderInfo.view, renderInfo.data);
 
             // TODO
             //yield app.controllers['layout']['index'].call(this);
 
             // render layout
             // 渲染Layout
-            const layout = self.renderTmplate(this, renderInfo.layout, {
+            const layout = self.renderTmplate(ctx, renderInfo.layout, {
                 content: self.safeString(view)
             })
 
-            this.body = layout;
+            ctx.body = layout;
 
-            yield next;
+            await next();
         }
     }
 
@@ -86,7 +82,7 @@ class Render {
         const suffix = this.settings.suffix || 'njk';
         const templatePath = uri + `.${suffix}`;
 
-        var context = Object.assign({}, this.state || {}, data || {}, helpers);
+        var context = Object.assign({}, ctx.state || {}, data || {}, helpers);
 
         return this.env.render(templatePath, context);
     }

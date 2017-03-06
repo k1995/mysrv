@@ -1,8 +1,10 @@
-const path = require('path'), server = require('koa')();
+const path = require('path'), koa = require('koa');
 const fs = require('fs');
-const Render = require('./render'), Router = require('./router');
+const Render = require('./render'), Router = require('./router');;
 const send = require('koa-send');
-const body = require('koa-better-body');
+const body = require('koa-bodyparser');
+
+const server = new koa();
 
 class Core {
 
@@ -50,7 +52,7 @@ exports.run = function (appDir) {
 /**
  * 向Koa context 注入 render 方法
  */
-function* render(next) {
+async function render(ctx, next) {
 
     // 区分于Layout以及子模块
     var main = true;
@@ -60,21 +62,21 @@ function* render(next) {
      *  name: 'template/path',
      * }
     */
-    this.render = function (data, option) {
+    ctx.render = function (data, option) {
 
-        const defaultView = path.join(this.routeInfo.controller, this.routeInfo.action);
-        this.renderInfo = {
+        const defaultView = path.join(ctx.routeInfo.controller, ctx.routeInfo.action);
+        ctx.renderInfo = {
             view: (option && option.name) || defaultView,
             data: data || {}
         }
 
         if(main) {
 
-            this.renderInfo.layout = option && option.layout ? option.layout : 'layout/index';
+            ctx.renderInfo.layout = option && option.layout ? option.layout : 'layout/index';
         }
     };
 
-    yield next;
+    await next();
 };
 
 
@@ -86,22 +88,22 @@ function staticServer(appDir) {
     const assetsRoot = path.join(appDir, 'assets');
     const files = fs.readdirSync(assetsRoot);
 
-    return function* (next) {
+    return async function (ctx, next) {
 
         for (let file of files) {
 
-            var maybe = this.path.replace('/', '');
+            var maybe = ctx.path.replace('/', '');
             var tmp = maybe.split('/');
             
             // 判断文件夹或文件
             if(tmp[0] == file) {
 
-                yield send(this, this.path, { root: assetsRoot });
+                await send(ctx, ctx.path, { root: assetsRoot });
                 return;
             }
         }
 
-        yield next;
+        await next();
     }
 }
 
