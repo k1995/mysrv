@@ -42,7 +42,7 @@ class Render {
             const view = self.renderTmplate(ctx, renderInfo.view, renderInfo.data);
 
             // TODO
-            //yield app.controllers['layout']['index'].call(this);
+            await self.app.controllers['layout']['index'].call(ctx);
 
             // render layout
             // 渲染Layout
