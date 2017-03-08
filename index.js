@@ -1,12 +1,8 @@
-const path = require('path'), koa = require('koa');
+const path = require('path');
 const fs = require('fs');
-const Render = require('./render'), Router = require('./router');;
-const send = require('koa-send');
-const body = require('koa-bodyparser');
+const koa = require('koa');
 
-const server = new koa();
-
-class Core {
+class Application {
 
     constructor(appDir, settings) {
 
@@ -15,131 +11,117 @@ class Core {
         this.settings = require(settingPath);
         this.settings.appDir = appDir;
         this.context = {};
-
-        this.server = server;
-
-        this.use(staticServer(appDir));
-
-        this.use(body())
-
-        loadPlugins(this);
-
-        loadMiddleware(this);
-        loadServices(this);
-
-        this.use(render);
-
-        this.render = server.context.render = new Render(this);
-        this.router = server.context.router = new Router(this);
-
-        server.listen(this.settings.port);
+        this.middlewares = [];
+        this.server = new koa();
     }
 
     /**
-     * 添加Koa中间件
+     * start server
+     */
+    run() {
+
+        loadSysCompoents(this);
+        loadAppCompoents(this);
+
+        // TODO: sortMiddleware();
+
+        for(let middleware of this.middlewares) {
+
+            if(middleware.startup && (typeof middleware.startup == 'function')) {
+
+                middleware.startup(this);
+            }
+
+            this.use(middleware);
+        }
+
+        this.server.listen(this.settings.port);
+    }
+
+    /**
+     * add middleware
      */
     use(middleware) {
 
         this.server.use(middleware);
     }
-}
-
-exports.run = function (appDir) {
-
-    return new Core(appDir)
-}
-
-/**
- * 向Koa context 注入 render 方法
- */
-async function render(ctx, next) {
-
-    // 区分于Layout以及子模块
-    var main = true;
 
     /**
-     * option = {
-     *  name: 'template/path',
-     * }
-    */
-    ctx.render = function (data, option) {
+     * register middleware
+     * 注册中间件
+     * middleware.level 表示中间件的优先级
+     * level 越大，优先级越高，优先执行。默认为 1
+     */
+    registerMiddleware(middleware) {
 
-        const defaultView = path.join(ctx.routeInfo.controller, ctx.routeInfo.action);
-        ctx.renderInfo = {
-            view: (option && option.name) || defaultView,
-            data: data || {}
-        }
+        if(!middleware.level) middleware.level = 1;
 
-        if(main) {
+        this.middlewares.push(middleware);
+    }
+}
 
-            ctx.renderInfo.layout = option && option.layout ? option.layout : 'layout/index';
-        }
-    };
-
-    await next();
-};
-
+var componentsDir;
 
 /**
- * 处理静态资源
+ * 加载系统级组件
  */
-function staticServer(appDir) {
+function loadSysCompoents(app) {
 
-    const assetsRoot = path.join(appDir, 'assets');
-    const files = fs.readdirSync(assetsRoot);
+    // 注册内置中间件
+    require('./middleware')(app);
+}
 
-    return async function (ctx, next) {
+/**
+ * 加载应用级组件
+ */
+function loadAppCompoents(app) {
 
-        for (let file of files) {
+    const appDir = app.settings.appDir;
+    componentsDir = path.join(appDir, 'components');
 
-            var maybe = ctx.path.replace('/', '');
-            var tmp = maybe.split('/');
-            
-            // 判断文件夹或文件
-            if(tmp[0] == file) {
+    loadPlugins(app);
+    loadMiddleware(app);
+    loadServices(app);
+}
 
-                await send(ctx, ctx.path, { root: assetsRoot });
-                return;
-            }
-        }
+function locateComponents(name) {
 
-        await next();
-    }
+    const loadDir = path.join(componentsDir, name);
+    return fs.readdirSync(loadDir);
 }
 
 function loadMiddleware(app) {
 
-    const middlewareDir = path.join(app.settings.appDir, 'components/middlewares');
-    const files = fs.readdirSync(middlewareDir);
+    const files = locateComponents('middlewares');
 
     for(let file of files){
 
-        app.use(require(path.join(middlewareDir, file)));
+        app.registerMiddleware(require(path.join(componentsDir, 'middlewares', file)));
     }
 }
 
 function loadPlugins(app) {
 
-    const pluginDir = path.join(app.settings.appDir, 'components/plugins');
-    const files = fs.readdirSync(pluginDir);
+    const files = locateComponents('plugins');
 
     for(let file of files){
 
-        require(path.join(pluginDir, file))(app);
+        require(path.join(componentsDir, 'plugins', file))(app);
     }
 }
 
 function loadServices(app) {
 
-    const loadDir = path.join(app.settings.appDir, 'components/services');
-    const files = fs.readdirSync(loadDir);
+    const files = locateComponents('services');
 
     app.context.services = {};
 
     for(let file of files){
         
         let name = file.replace('.js', '');
-        let Service = require(path.join(loadDir, file));
+        let Service = require(path.join(componentsDir, 'services', file));
         app.context.services[name] = new Service(app);
     }
 }
+
+module.exports = Application;

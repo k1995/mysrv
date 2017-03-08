@@ -105,7 +105,7 @@ view.html
 
 ```html
 <div>
-	{{ $.render('index:child') }}
+	{{ ctx | $.render('index:child') }}
 </div>
 ```
 
@@ -121,7 +121,7 @@ layout.html
     ...
 </head>
 <body>
-    {{ $.render('layout:header') }}
+    {{ ctx | $.render('layout:header') }}
 
     <div class="container">
     
@@ -129,7 +129,7 @@ layout.html
     
     </div>
     
-    {{ $.render('layout:footer') }}
+    {{ ctx | $.render('layout:footer') }}
 </body>
 </html>
 ```
