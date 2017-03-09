@@ -3,8 +3,6 @@ const nunjucks = require('nunjucks');
 
 // Nunjucks settings & env
 var settings, env;
-// 模版中使用的Helper函数
-var renderHelper = {};
 var app;
 
 /**
@@ -31,6 +29,7 @@ exports = module.exports = async function render(ctx, next) {
         if(main) {
 
             ctx.renderInfo.layout = option && option.layout ? option.layout : 'layout/index';
+            main = false;
         }
     };
 
@@ -68,9 +67,7 @@ function RenderExtension() {
     this.run = function(self, url, data, callback) {
 
         var ctx = self.ctx.ctx;
-
         if(!callback) callback = data;
-
         var tmp = url.split(':'), controller, action;
 
         if (tmp.length > 1) {
@@ -109,19 +106,24 @@ exports.start = async function (ctx, next) {
 
     const routeInfo = ctx.routeInfo, renderInfo = ctx.renderInfo;
 
+    var mainViewData = renderInfo.data;
+
     if(!renderInfo) return await next();
 
     // render main view
     // 渲染模版
-    const view = await tryRender(ctx, renderInfo.view, renderInfo.data);
+    const view = await tryRender(ctx, renderInfo.view, mainViewData);
 
     await app.controllers['layout']['index'].call(ctx);
 
+    // 主视图中的数据会覆盖布局模版中同名的
+    var data =  Object.assign(ctx.renderInfo.data, mainViewData, {
+        view: safeString(view)
+    });
+
     // render layout
     // 渲染Layout
-    const layout = await tryRender(ctx, renderInfo.layout, {
-        content: safeString(view)
-    })
+    const layout = await tryRender(ctx, renderInfo.layout, data);
 
     ctx.body = layout;
 
