@@ -99,19 +99,19 @@ module.exports = IndexController;
 
 __视图__ 
 
-在`action`中调用 `this.render()` 开始模版渲染流程。如果在模版中调用 `$.render()` 会渲染子模版，并返回渲染后的HTML。注意`$.render()`不仅仅只是将其渲染后的HTML包含进来，它会执行完整的 action !
+在`action`中调用 `this.render()` 开始模版渲染流程。如果在模版中调用 `{% render "index:child %}` 会渲染子模版，并返回渲染后的HTML。注意`{% render "index:child %}`不仅仅只是将其渲染后的HTML包含进来，它会执行完整的 action !
 
 view.html
 
 ```html
 <div>
-	{{ ctx | $.render('index:child') }}
+	{% render "index:child %}
 </div>
 ```
 
 
 
-上面完成了`view.html`模版的渲染后，还不能直接返回给浏览器，他不是完整的HTML。下面还要渲染 `Layout` 布局模版，`{{ content }}` 会替换为上面的 `view.html`渲染后的内容，这样 `view.html` 和 `layout.html`拼接起来才是一个完整的HTML 页面。 
+上面完成了`view.html`模版的渲染后，还不能直接返回给浏览器，他不是完整的HTML。下面还要渲染 `Layout` 布局模版，`{{ view}}` 会替换为上面的 `view.html`渲染后的内容，这样 `view.html` 和 `layout.html`拼接起来才是一个完整的HTML 页面。 
 
 layout.html
 
@@ -121,15 +121,15 @@ layout.html
     ...
 </head>
 <body>
-    {{ ctx | $.render('layout:header') }}
+    {% render "layout:header" %}
 
     <div class="container">
     
-        {{ content }}
+        {{ view }}
     
     </div>
     
-    {{ ctx | $.render('layout:footer') }}
+    {% render "layout:footer" %}
 </body>
 </html>
 ```

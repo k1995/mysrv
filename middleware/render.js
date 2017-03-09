@@ -41,21 +41,64 @@ exports.startup = function(_app) {
 
     app = _app, settings = app.settings.nunjucks,
         env = createEnv('views', {});
-    
-    const helper = require('../lib/render-helper');
-    
-    helper.startup(app);
 
-    for(let name in  helper) {
-
-        if(name != 'startup' && (typeof helper[name] == 'function')) {
-
-            env.addFilter(name, helper[name], true);
-        }
-    }
+    env.addExtension('renderExtension', new RenderExtension());
 
     app.render = tryRender;
     app.safeString = safeString;
+}
+
+function RenderExtension() {
+
+    this.tags = ['render'];
+
+    this.parse = function(parser, nodes, lexer) {
+        // get the tag token
+        var tok = parser.nextToken();
+
+        // parse the args and move after the block end. passing true
+        // as the second arg is required if there are no parentheses
+        var args = parser.parseSignature(null, true);
+        parser.advanceAfterBlockEnd(tok.value);
+
+        // See above for notes about CallExtension
+        return new nodes.CallExtensionAsync(this, 'run', args);
+    };
+
+    this.run = function(self, url, data, callback) {
+
+        var ctx = self.ctx.ctx;
+
+        if(!callback) callback = data;
+
+        var tmp = url.split(':'), controller, action;
+
+        if (tmp.length > 1) {
+
+            controller = tmp[0];
+            action = tmp[1];
+        } else {
+            controller = tmp[0];
+            action = 'index';
+        }
+
+        var func;
+
+        if(typeof app.controllers[controller] == 'function') {
+
+            func = app.controllers[controller].prototype[action];
+        }else{
+            func = app.controllers[controller][action];
+        }
+        
+        Promise.resolve(func.call(ctx)).then(function() {
+
+            data = Object.assign(data || {}, ctx.renderInfo.data || {});
+            app.render(ctx, `${controller}/${action}`, data).then((content) => {
+                callback(null, app.safeString(content));
+            });
+        });
+    }
 }
 
 /**
