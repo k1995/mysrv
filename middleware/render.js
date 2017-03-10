@@ -47,6 +47,9 @@ exports.startup = function(_app) {
     app.safeString = safeString;
 }
 
+/**
+ * {% render %} custom tag
+ */
 function RenderExtension() {
 
     this.tags = ['render'];
@@ -79,22 +82,13 @@ function RenderExtension() {
             action = 'index';
         }
 
-        var func;
-
-        if(typeof app.controllers[controller] == 'function') {
-
-            func = app.controllers[controller].prototype[action];
-        }else{
-            func = app.controllers[controller][action];
-        }
-        
-        Promise.resolve(func.call(ctx)).then(function() {
-
-            data = Object.assign(data || {}, ctx.renderInfo.data || {});
-            app.render(ctx, `${controller}/${action}`, data).then((content) => {
-                callback(null, app.safeString(content));
+        runAction(ctx, controller, action)
+            .then(() => {
+                data = Object.assign(data || {}, ctx.renderInfo.data || {});
+                app.render(ctx, `${controller}/${action}`, data).then((content) => {
+                    callback(null, app.safeString(content));
+                });
             });
-        });
     }
 }
 
@@ -114,7 +108,7 @@ exports.start = async function (ctx, next) {
     // 渲染模版
     const view = await tryRender(ctx, renderInfo.view, mainViewData);
 
-    await app.controllers['layout']['index'].call(ctx);
+    await runAction(ctx, 'layout', 'index');
 
     // 主视图中的数据会覆盖布局模版中同名的
     var data =  Object.assign(ctx.renderInfo.data, mainViewData, {
@@ -175,6 +169,22 @@ function createEnv(path, options) {
             autoescape: autoescape,
             throwOnUndefined: throwOnUndefined
         });
+}
+
+async function runAction(ctx, controller, action) {
+
+    const Controller = app.controllers[controller];
+    var func;
+
+    if(typeof Controller == 'function') {
+
+        func = Controller.prototype[action];
+    }else{
+        func = Controller[action];
+    }
+
+    // function is implicitly wrapped in Promise.resolve
+    return func.call(ctx);
 }
 
 exports.level = 10;
