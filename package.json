@@ -1,6 +1,6 @@
 {
   "name": "mysrv",
-  "version": "0.3.2",
+  "version": "0.3.4",
   "description": "Yet another Node.js web framework,based on koa.js",
   "main": "index.js",
   "scripts": {

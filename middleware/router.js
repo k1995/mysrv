@@ -21,6 +21,7 @@ exports.startup = function(_app) {
 function loadController() {
 
     const controllerDir = path.join(settings.appDir, 'components/controllers');
+    if(!fs.existsSync(controllerDir)) return [];
     const maybe = fs.readdirSync(controllerDir);
     const controllers = {};
 
