@@ -1,14 +1,27 @@
 const path = require('path');
 const fs = require('fs');
 const koa = require('koa');
+const config = require('./config-default');
 
 class Application {
 
     constructor(appDir, settings) {
 
-        const settingPath = path.join(appDir, 'config');
-        const assetsPath = path.join(appDir, 'assets');
-        this.settings = require(settingPath);
+        do {
+
+            settings = settings ? settings : {};
+            if (!appDir) break;
+            const settingDir = path.join(appDir, 'config');
+            // new mysrv({option: value});
+            if (typeof appDir == 'object') {
+
+                settings = appDir;
+                break;
+            }
+            if (fs.existsSync(settingDir)) settings = Object.assign(require(settingDir), settings);
+        } while (0);
+
+        this.settings = Object.assign(config, settings);
         this.settings.appDir = appDir;
         this.context = {};
         this.middlewares = [];
@@ -25,9 +38,9 @@ class Application {
 
         // TODO: sortMiddleware();
 
-        for(let middleware of this.middlewares) {
+        for (let middleware of this.middlewares) {
 
-            if(middleware.startup && (typeof middleware.startup == 'function')) {
+            if (middleware.startup && (typeof middleware.startup == 'function')) {
 
                 middleware.startup(this);
             }
@@ -36,6 +49,11 @@ class Application {
         }
 
         this.server.listen(this.settings.port);
+
+        setImmediate(() => {
+
+            console.log(`listening on ${this.settings.port}`);
+        });
     }
 
     /**
@@ -54,7 +72,7 @@ class Application {
      */
     registerMiddleware(middleware) {
 
-        if(!middleware.level) middleware.level = 1;
+        if (!middleware.level) middleware.level = 1;
 
         this.middlewares.push(middleware);
     }
@@ -79,6 +97,8 @@ function loadAppCompoents(app) {
     const appDir = app.settings.appDir;
     componentsDir = path.join(appDir, 'components');
 
+    if(!fs.existsSync(componentsDir)) return;
+
     loadPlugins(app);
     loadMiddleware(app);
     loadServices(app);
@@ -87,14 +107,19 @@ function loadAppCompoents(app) {
 function locateComponents(name) {
 
     const loadDir = path.join(componentsDir, name);
-    return fs.readdirSync(loadDir);
+    if(fs.existsSync(loadDir)) {
+
+        return fs.readdirSync(loadDir);
+    }else{
+        return [];
+    }
 }
 
 function loadMiddleware(app) {
 
     const files = locateComponents('middlewares');
 
-    for(let file of files){
+    for (let file of files) {
 
         app.registerMiddleware(require(path.join(componentsDir, 'middlewares', file)));
     }
@@ -104,7 +129,7 @@ function loadPlugins(app) {
 
     const files = locateComponents('plugins');
 
-    for(let file of files){
+    for (let file of files) {
 
         require(path.join(componentsDir, 'plugins', file))(app);
     }
@@ -116,8 +141,8 @@ function loadServices(app) {
 
     app.context.services = {};
 
-    for(let file of files){
-        
+    for (let file of files) {
+
         let name = file.replace('.js', '');
         let Service = require(path.join(componentsDir, 'services', file));
         app.context.services[name] = new Service(app);

@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const send = require('koa-send');
 
-var assetsRoot, files;
+var assetsRoot, files = [];
 
 /**
  * 处理静态资源
@@ -29,6 +29,7 @@ exports.startup = function(app) {
 
     const appDir = app.settings.appDir;
     assetsRoot = path.join(appDir, 'assets');
+    if(!fs.existsSync(assetsRoot)) return;
     files = fs.readdirSync(assetsRoot);
 }
 
