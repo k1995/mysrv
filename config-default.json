@@ -2,5 +2,6 @@
     "port": "3000",
     "nunjucks": {
         "suffix": "njk"
-    }
+    },
+    "hintSign": "$"
 }
