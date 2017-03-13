@@ -131,7 +131,7 @@ layout.html
 
     <div class="container">
     
-        {{ view }}
+        {{ $view }}
     
     </div>
     
