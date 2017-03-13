@@ -38,8 +38,8 @@ exports = module.exports = async function render(ctx, next) {
 
 exports.startup = function(_app) {
 
-    app = _app, settings = app.settings.nunjucks,
-        env = createEnv('views', {});
+    app = _app, settings = app.settings.nunjucks;
+    env = createEnv(path.join(app.settings.appDir, 'views'), {});
 
     env.addExtension('renderExtension', new RenderExtension());
 
