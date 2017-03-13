@@ -54,7 +54,7 @@ npm install mysrv
 
 
 
-## Example
+## Overview
 
 __Controller__
 
@@ -143,4 +143,23 @@ layout.html
 > __布局模版__ 顾名思义，即定义一个HTML的基本结构。如一个网站的头部、尾部每个页面基本相同，只是中间内容在发生变化，这些公用的部分就应该放在__布局模版__中，以减少重复代码，主模版就只是中间变化的这部分内容。
 >
 > 布局模版默认是开启的，如果你的主模版(如上面的view.html)已经包含完整的HTML，不想拼接布局模版，通过设置`this.render` 第二个参数 `layout = null` 来关闭布局模式。即 `this.render(data, {layout: null})`。
+
+
+
+## Examples
+
+To view the examples, clone the Express repo and install the dependencies
+
+```
+$ git clone https://github.com/k1995/mysrv.git
+$ cd mysrv
+$ npm install
+```
+
+Then run whichever example you want
+
+```
+$ cd examples
+$ node hello
+```
 

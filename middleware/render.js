@@ -69,7 +69,7 @@ function RenderExtension() {
 
     this.run = function(self, url, data, callback) {
 
-        var ctx = self.ctx.ctx;
+        var ctx = self.ctx.$ctx;
         if(!callback) callback = data;
         var tmp = url.split(':'), controller, action;
 
@@ -112,7 +112,7 @@ exports.start = async function (ctx, next) {
 
     // 主视图中的数据会覆盖布局模版中同名的
     var data =  Object.assign(ctx.renderInfo.data, mainViewData, {
-        view: safeString(view)
+        $view: safeString(view)
     });
 
     // render layout
@@ -140,7 +140,7 @@ function tryRender(ctx, uri, data) {
     const suffix = settings.suffix || 'njk';
     const templatePath = uri + `.${suffix}`;
     var context = Object.assign({}, ctx.state || {}, data);
-    context.ctx = ctx;
+    context.$ctx = ctx;
 
     return new Promise(function(reslove, reject) {
 
