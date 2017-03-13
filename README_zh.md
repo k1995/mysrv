@@ -138,3 +138,21 @@ layout.html
 >
 > 布局模版默认是开启的，如果你的主模版(如上面的view.html)已经包含完整的HTML，不想拼接布局模版，通过设置`this.render` 第二个参数 `layout = null` 来关闭布局模式。即 `this.render(data, {layout: null})`。
 
+
+
+## 演示程序
+
+安装 Mysrv 及依赖
+
+```
+$ git clone https://github.com/k1995/mysrv.git
+$ cd mysrv
+$ npm install
+```
+
+进入 examples 目录，然后执行任意示例
+
+```
+$ cd examples
+$ node hello
+```

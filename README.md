@@ -148,7 +148,7 @@ layout.html
 
 ## Examples
 
-To view the examples, clone the Express repo and install the dependencies
+To view the examples, clone the Mysrv and install the dependencies
 
 ```
 $ git clone https://github.com/k1995/mysrv.git
