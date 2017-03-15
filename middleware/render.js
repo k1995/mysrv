@@ -100,9 +100,9 @@ exports.start = async function (ctx, next) {
 
     const routeInfo = ctx.routeInfo, renderInfo = ctx.renderInfo;
 
-    var mainViewData = renderInfo.data;
-
     if(!renderInfo) return await next();
+
+    var mainViewData = renderInfo.data;
 
     // render main view
     // 渲染模版
