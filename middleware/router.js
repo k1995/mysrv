@@ -85,7 +85,8 @@ function route(controllerName) {
 
         router[method](url, async function(ctx, next) {
 
-            ctx.params = Object.assign(ctx.query, ctx.request.body || {});
+            // ctx.request.body provided by bodyparser
+            ctx.params = Object.assign(ctx.params, ctx.query, ctx.request.body || {});
             
             ctx.routeInfo = {
                 controller: controllerName,
