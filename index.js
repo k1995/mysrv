@@ -45,12 +45,7 @@ class Application {
 
         for (let middleware of this.middlewares) {
 
-            if (middleware.startup && (typeof middleware.startup == 'function')) {
-
-                middleware.startup(this);
-            }
-
-            this.use(middleware);
+            this.use(middleware(this));
         }
 
         this.server.listen(this.settings.port);

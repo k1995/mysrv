@@ -8,6 +8,7 @@ module.exports = function(app) {
     const toLoad = [
         'static',
         'body',
+        'session',
         'render',
         'router'
     ];

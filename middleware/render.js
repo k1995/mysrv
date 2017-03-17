@@ -8,35 +8,7 @@ var app;
 /**
  * 向Koa context 注入 render 方法
  */
-exports = module.exports = async function render(ctx, next) {
-
-    // 区分于Layout以及子模块
-    var main = true;
-
-    /**
-     * option = {
-     *  name: 'template/path',
-     * }
-    */
-    ctx.render = function (data, option) {
-
-        const defaultView = path.join(ctx.routeInfo.controller, ctx.routeInfo.action);
-        ctx.renderInfo = {
-            view: (option && option.name) || defaultView,
-            data: data || {}
-        }
-
-        if(main) {
-
-            ctx.renderInfo.layout = option && option.layout ? option.layout : 'layout/index';
-            main = false;
-        }
-    };
-
-    await next();
-};
-
-exports.startup = function(_app) {
+exports = module.exports = function(_app) {
 
     app = _app, settings = app.settings.nunjucks;
     env = createEnv(path.join(app.settings.appDir, 'views'), {});
@@ -45,6 +17,34 @@ exports.startup = function(_app) {
 
     app.render = tryRender;
     app.safeString = safeString;
+    
+    return async function render(ctx, next) {
+
+        // 区分于Layout以及子模块
+        var main = true;
+
+        /**
+         * option = {
+         *  name: 'template/path',
+         * }
+        */
+        ctx.render = function (data, option) {
+
+            const defaultView = path.join(ctx.routeInfo.controller, ctx.routeInfo.action);
+            ctx.renderInfo = {
+                view: (option && option.name) || defaultView,
+                data: data || {}
+            }
+
+            if(main) {
+
+                ctx.renderInfo.layout = option && option.layout ? option.layout : 'layout/index';
+                main = false;
+            }
+        };
+
+        await next();
+    };
 }
 
 /**
@@ -186,5 +186,3 @@ async function runAction(ctx, controller, action) {
     // function is implicitly wrapped in Promise.resolve
     return func.call(ctx);
 }
-
-exports.level = 10;

@@ -4,15 +4,15 @@ const render = require('./render');
 
 var app, settings, controllers;
 
-exports = module.exports = router.routes();
-
-exports.startup = function(_app) {
+module.exports = function(_app) {
 
     app = _app;settings = app.settings;
     controllers = loadController();
     app.controllers = app.server.context.controllers = controllers;
 
     for(let name in controllers) route(name);
+
+    return router.routes();
 }
 
 /**

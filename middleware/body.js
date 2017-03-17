@@ -1,5 +1,6 @@
 const body = require('koa-bodyparser');
 
-exports = module.exports = body();
+module.exports = function() {
 
-exports.level = 10;
+    return body();
+}
