@@ -1,7 +1,16 @@
 {
     "port": "3000",
+    
     "nunjucks": {
         "suffix": "njk"
     },
-    "hintSign": "$"
+    
+    "hintSign": "$",
+    
+    "layout": {
+        "enable": true,
+        "name": "layout:index",
+        "path": "layout/index",
+        "run": false
+    }
 }

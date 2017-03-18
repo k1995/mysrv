@@ -8,7 +8,7 @@ var app;
 /**
  * 向Koa context 注入 render 方法
  */
-exports = module.exports = function(_app) {
+exports = module.exports = function (_app) {
 
     app = _app, settings = app.settings.nunjucks;
     env = createEnv(path.join(app.settings.appDir, 'views'), {});
@@ -17,7 +17,7 @@ exports = module.exports = function(_app) {
 
     app.render = tryRender;
     app.safeString = safeString;
-    
+
     return async function render(ctx, next) {
 
         // 区分于Layout以及子模块
@@ -25,7 +25,7 @@ exports = module.exports = function(_app) {
 
         /**
          * option = {
-         *  name: 'template/path',
+         *  layout: 'controller:action',
          * }
         */
         ctx.render = function (data, option) {
@@ -36,9 +36,20 @@ exports = module.exports = function(_app) {
                 data: data || {}
             }
 
-            if(main) {
+            if (main) {
 
-                ctx.renderInfo.layout = option && option.layout ? option.layout : 'layout/index';
+                let layout = {};
+                if (this.layout) layout = this.layout;
+                if (option && option.layout !== undefined) {
+
+                    if (!option.layout) {
+
+                        layout = { enable: false };
+                    }else{
+                        layout = option.layout;
+                    }
+                }
+                ctx.renderInfo.layout = Object.assign({}, app.settings.layout, layout);
                 main = false;
             }
         };
@@ -54,7 +65,7 @@ function RenderExtension() {
 
     this.tags = ['render'];
 
-    this.parse = function(parser, nodes, lexer) {
+    this.parse = function (parser, nodes, lexer) {
         // get the tag token
         var tok = parser.nextToken();
 
@@ -67,10 +78,10 @@ function RenderExtension() {
         return new nodes.CallExtensionAsync(this, 'run', args);
     };
 
-    this.run = function(self, url, data, callback) {
+    this.run = function (self, url, data, callback) {
 
         var ctx = self.ctx.$ctx;
-        if(!callback) callback = data;
+        if (!callback) callback = data;
         var tmp = url.split(':'), controller, action;
 
         if (tmp.length > 1) {
@@ -100,26 +111,36 @@ exports.start = async function (ctx, next) {
 
     const routeInfo = ctx.routeInfo, renderInfo = ctx.renderInfo;
 
-    if(!renderInfo) return await next();
+    if (!renderInfo) return await next();
 
     var mainViewData = renderInfo.data;
 
     // render main view
     // 渲染模版
     const view = await tryRender(ctx, renderInfo.view, mainViewData);
+    const layout = renderInfo.layout;
 
-    await runAction(ctx, 'layout', 'index');
+    if (layout.enable) {
 
-    // 主视图中的数据会覆盖布局模版中同名的
-    var data =  Object.assign(ctx.renderInfo.data, mainViewData, {
-        $view: safeString(view)
-    });
+        if(layout.run) {
 
-    // render layout
-    // 渲染Layout
-    const layout = await tryRender(ctx, renderInfo.layout, data);
+            let tmp = layout.name.split(':');
+            await runAction(ctx, tmp[0], tmp[1]);
+        }
 
-    ctx.body = layout;
+        // 主视图中的数据会覆盖布局模版中同名的
+        var data = Object.assign(ctx.renderInfo.data, mainViewData, {
+            $view: safeString(view)
+        });
+
+        // render layout
+        // 渲染Layout
+        const content = await tryRender(ctx, layout.path, data);
+
+        ctx.body = content;
+    } else {
+        ctx.body = view;
+    }
 
     await next();
 }
@@ -142,11 +163,11 @@ function tryRender(ctx, uri, data) {
     var context = Object.assign({}, ctx.state || {}, data);
     context.$ctx = ctx;
 
-    return new Promise(function(reslove, reject) {
+    return new Promise(function (reslove, reject) {
 
-        env.render(templatePath, context, function(err, res) {
+        env.render(templatePath, context, function (err, res) {
 
-            if(!err) return reslove(res);
+            if (!err) return reslove(res);
             reject(err);
         });
     });
@@ -176,10 +197,10 @@ async function runAction(ctx, controller, action) {
     const Controller = app.controllers[controller];
     var func;
 
-    if(typeof Controller == 'function') {
+    if (typeof Controller == 'function') {
 
         func = Controller.prototype[action];
-    }else{
+    } else {
         func = Controller[action];
     }
 
