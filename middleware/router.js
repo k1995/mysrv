@@ -52,6 +52,8 @@ function route(controllerName) {
         if (prop == 'constructor' || ('function' != (typeof action))) continue;
         const actionName = prop, conf = getHint(action);
 
+        if(conf.public == "false" ) continue;
+
         // 默认处理所有method类型
         var method = 'all', url = '';
         method = conf['method'] ? conf['method'] : method;
