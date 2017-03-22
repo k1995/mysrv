@@ -1,5 +1,6 @@
 const path = require('path');
 const nunjucks = require('nunjucks');
+const assetHelper = require('../lib/asset-helper');
 
 // Nunjucks settings & env
 var settings, env;
@@ -14,6 +15,7 @@ exports = module.exports = function (_app) {
     env = createEnv(path.join(app.settings.appDir, 'views'), {});
 
     env.addExtension('renderExtension', new RenderExtension());
+    env.addGlobal('assets', assetHelper);
 
     app.render = tryRender;
     app.safeString = safeString;
