@@ -12,7 +12,7 @@ var app;
 exports = module.exports = function (_app) {
 
     app = _app, settings = app.settings.nunjucks;
-    env = createEnv(path.join(app.settings.appDir, 'views'), {});
+    env = createEnv(path.join(app.settings.appDir, 'views'));
 
     env.addExtension('renderExtension', new RenderExtension());
     env.addGlobal('assets', assetHelper);
@@ -178,20 +178,15 @@ function tryRender(ctx, uri, data) {
 /**
  * create Nunjucks's env
  */
-function createEnv(path, options) {
-
-    const autoescape = options.autoescape && true,
-        noCache = options.noCache || false,
-        watch = options.watch || false,
-        throwOnUndefined = options.throwOnUndefined || false;
+function createEnv(path) {
 
     return new nunjucks.Environment(new nunjucks.FileSystemLoader(path || 'views', {
-        noCache: noCache,
-        watch: watch,
+        noCache: settings.noCache,
+        watch: settings.watch,
     }), {
-            autoescape: autoescape,
-            throwOnUndefined: throwOnUndefined
-        });
+        autoescape: settings.autoescape,
+        throwOnUndefined: settings.throwOnUndefined
+    });
 }
 
 async function runAction(ctx, controller, action) {

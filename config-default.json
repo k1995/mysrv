@@ -2,7 +2,11 @@
     "port": "3000",
     
     "nunjucks": {
-        "suffix": "njk"
+        "suffix": "njk",
+        "autoescape": true,
+        "noCache": true,
+        "watch": false,
+        "throwOnUndefined": false
     },
     
     "hintSign": "$",
