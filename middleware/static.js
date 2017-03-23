@@ -11,8 +11,7 @@ exports = module.exports = function(app) {
 
     settings = app.settings.asset ? app.settings.asset : {};
     if (!settings.root) settings.root = path.join(app.settings.appDir, 'assets');
-    if (!fs.existsSync(settings.root)) return;
-    files = fs.readdirSync(settings.root);
+    if (fs.existsSync(settings.root)) files = fs.readdirSync(settings.root);
     
     return async function (ctx, next) {
 
