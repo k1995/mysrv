@@ -56,6 +56,11 @@ exports = module.exports = function (_app) {
             }
         };
 
+        ctx.json = function (data) {
+
+            ctx.body = data;
+        }
+
         await next();
     };
 }
