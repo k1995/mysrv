@@ -95,6 +95,8 @@ function route(controllerName) {
                 action: actionName
             }
 
+            ctx.settings = app.settings;
+
             for(let name in app.context.services) ctx[name] = app.context.services[name];
             await action.call(ctx);
             await next();
