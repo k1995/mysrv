@@ -114,12 +114,9 @@ function route(controllerName) {
  */
 function getHint(fn) {
 
-    var str = fn.toString();
-    var args = fn.toString().slice(str.indexOf('(') + 1, str.indexOf(')')).split(',');
-    if (!args) { return null }
-
-    var result = {};
-
+    var str = fn.toString().replace(/\{[\s\S]*\}/g, ''),//remove function body
+        args = str.match(/\(([\s\S]*)\)/)[1].split(','),
+        result = {};
     for (let i of args) {
 
         i = i.trim();
