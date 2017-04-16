@@ -40,8 +40,8 @@ class Application {
         middleware(this);
         // load application components
         component(this);
-    
-        // TODO: sortMiddleware();
+        // sort middlewares by level
+        //this.middlewares.sort((a ,b) =>  b.level - a.level);
 
         for (let middleware of this.middlewares) {
 
