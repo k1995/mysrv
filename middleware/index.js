@@ -16,7 +16,7 @@ module.exports = function(app) {
     for(let item of toLoad) {
 
         var middleware = require(`./${item}`);
-        if(!middleware.level) middleware.level = 10;
+        if(!middleware.level) middleware.level = 15;
         app.registerMiddleware(middleware);
     }
 }

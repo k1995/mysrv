@@ -15,6 +15,8 @@ module.exports = function(_app) {
     return router.routes();
 }
 
+module.exports.level = 5;
+
 /**
  * 加载 Controller
  */

@@ -41,7 +41,7 @@ class Application {
         // load application components
         component(this);
         // sort middlewares by level
-        //this.middlewares.sort((a ,b) =>  b.level - a.level);
+        this.middlewares.sort((a ,b) =>  b.level - a.level);
 
         for (let middleware of this.middlewares) {
 
@@ -67,11 +67,11 @@ class Application {
     /**
      * register middleware
      * middleware.level 表示中间件的优先级
-     * level 越大，优先级越高，优先执行。默认为 1
+     * level 越大，优先级越高，优先执行。默认为 10
      */
     registerMiddleware(middleware) {
 
-        if (!middleware.level) middleware.level = 1;
+        if (!middleware.level) middleware.level = 10;
 
         this.middlewares.push(middleware);
     }
