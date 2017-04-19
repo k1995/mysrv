@@ -106,7 +106,10 @@ function RenderExtension() {
                 app.render(ctx, `${controller}/${action}`, data).then((content) => {
                     callback(null, app.safeString(content));
                 });
-            });
+            })
+            .catch((e) => {
+                callback(null, e.message);
+            })
     }
 }
 
