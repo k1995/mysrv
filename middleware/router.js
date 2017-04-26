@@ -101,7 +101,6 @@ function route(controllerName) {
 
             for(let name in app.context.services) ctx[name] = app.context.services[name];
             await action.call(ctx);
-            await next();
 
         }, render.start);
     }
