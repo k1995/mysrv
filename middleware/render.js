@@ -117,11 +117,11 @@ function RenderExtension() {
  * 开始渲染流程
  * start render
 */
-exports.start = async function (ctx, next) {
+exports.start = async function (ctx) {
 
     const routeInfo = ctx.routeInfo, renderInfo = ctx.renderInfo;
 
-    if (!renderInfo) return await next();
+    if (!renderInfo) return;
 
     var mainViewData = renderInfo.data;
 
@@ -151,8 +151,6 @@ exports.start = async function (ctx, next) {
     } else {
         ctx.body = view;
     }
-
-    await next();
 }
 
 /**
