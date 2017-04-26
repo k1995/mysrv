@@ -22,10 +22,20 @@ module.exports.level = 5;
  */
 function loadController() {
 
+    const controllers = {};
     const controllerDir = path.join(settings.appDir, 'components/controllers');
+
+    if(settings.controller && settings.controller.include) {
+
+        for(let controllerName of settings.controller.include) {
+
+            controllers[controllerName] = require(path.join(controllerDir, controllerName));
+        }
+        return controllers;
+    }
+
     if(!fs.existsSync(controllerDir)) return [];
     const maybe = fs.readdirSync(controllerDir);
-    const controllers = {};
 
     for(let i in maybe) {
 
