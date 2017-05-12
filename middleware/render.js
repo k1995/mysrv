@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const nunjucks = require('nunjucks');
 const assetHelper = require('../lib/asset-helper');
 
@@ -16,6 +17,7 @@ exports = module.exports = function (_app) {
 
     env.addExtension('renderExtension', new RenderExtension());
     env.addGlobal('assets', assetHelper);
+    loadFilters(env, app.settings.appDir);
 
     app.render = tryRender;
     app.safeString = safeString;
@@ -58,7 +60,8 @@ exports = module.exports = function (_app) {
 
         ctx.json = function (data) {
 
-            ctx.body = data;
+            ctx.type = 'application/json; charset=utf-8';
+            ctx.body = JSON.stringify(data);
         }
 
         await next();
@@ -209,4 +212,19 @@ async function runAction(ctx, controller, action) {
 
     // function is implicitly wrapped in Promise.resolve
     return func.call(ctx);
+}
+
+function loadFilters(env, appDir) {
+
+    const filterPath = path.join(appDir, 'components/filters');
+    if(!fs.existsSync(filterPath)) return;
+    const filters = require(filterPath);
+
+    for(let name in filters) {
+
+        if(typeof filters[name] == 'function') {
+
+            env.addFilter(name, filters[name]);
+        }
+    }
 }
